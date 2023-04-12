@@ -1,0 +1,34 @@
+- name: Setup and Update Config on NGINX
+  hosts: loadbalancer
+  become: True
+  remote_user: root
+  collections:
+    - nginxinc.nginx_core
+
+  roles:
+    - role: nginxinc.nginx
+  vars:
+    nginx_type: 'opensource'
+    nginx_enable: true
+    nginx_unit_enable: true
+    nginx_branch: stable
+    nginx_start: true
+    nginx_install_source_pcre: true
+    nginx_install_source_zlib: true
+    nginx_modules: 
+      - perl
+      - geoip
+      - image-filter
+    nginx_logrotate_conf_enable: true
+    nginx_logrotate_conf:
+      paths:
+        - /var/log/nginx/*.log
+      options:
+        - daily
+        - missingok
+        - rotate 14
+        - compress
+        - delaycompress
+        - notifempty
+        - sharedscripts
+

@@ -1,0 +1,22 @@
+all:
+  children:
+    db:
+      hosts:
+        192.168.56.[51:51]:
+    web:
+      hosts:
+        192.168.56.[41:43]:
+    loadbalancer:
+      hosts:
+        192.168.56.[31:31]:
+    linux:
+      children:
+        db:
+        web:
+        loadbalancer:
+      vars:
+        ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
+        ansible_port: 22
+        ansible_user: "vagrant"
+        ansible_password: vagrant
+        ansible_ssh_common_args: "-o StrictHostKeyChecking=no"

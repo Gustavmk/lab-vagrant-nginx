@@ -1,0 +1,53 @@
+Vagrant.configure("2") do |config|
+    check_guest_additions = false
+    functional_vboxsf = false
+    config.vm.provider :virtualbox do |vb|
+      vb.memory = 512
+      vb.cpus = 1
+    end
+    
+    
+    N = 1
+    (1..N).each do |i|
+    config.vm.define "lb#{i}" do |lb|
+      lb.ssh.insert_key = false
+      lb.ssh.forward_agent = true
+      lb.vm.box = "bento/ubuntu-18.04"
+      lb.vm.hostname = "lb#{i}"
+      lb.vm.network "private_network", ip: "192.168.56.#{30+i}"
+      lb.vm.provision "shell", inline: <<-SHELL
+        apt-get update
+      SHELL
+    end
+  end
+
+    N = 3
+    (1..N).each do |i|
+    config.vm.define "web#{i}" do |web|
+      web.ssh.insert_key = false
+      web.ssh.forward_agent = true
+      web.vm.box = "bento/ubuntu-18.04"
+      web.vm.hostname = "web#{i}"
+      web.vm.network "private_network", ip: "192.168.56.#{40+i}"
+      web.vm.provision "shell", inline: <<-SHELL
+        apt-get update
+      SHELL
+    end
+  end
+
+    N = 1
+    (1..N).each do |i|
+    config.vm.define "db#{i}" do |db|
+      db.ssh.insert_key = false
+      db.ssh.forward_agent = true
+      db.vm.box = "bento/ubuntu-18.04"
+      db.vm.hostname = "db#{i}"
+      db.vm.network "private_network", ip: "192.168.56.#{50+i}"
+      db.vm.provision "shell", inline: <<-SHELL
+        apt-get update
+      SHELL
+    end
+  end
+
+  # END VAGRANTFILE
+end

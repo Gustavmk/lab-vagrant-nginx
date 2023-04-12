@@ -1,0 +1,92 @@
+- name: Setup and Update Config on NGINX
+  hosts: loadbalancer
+  become: True
+  remote_user: root
+  collections:
+    - nginxinc.nginx_core
+  vars:
+    nginx_path: /etc/nginx
+    nginx_sites: "{{ nginx_path }}/sites-available"
+    site_name: "test.com"
+    upstream_name: "servers"
+
+  tasks:
+
+    - name: Start service NGINX, if not started
+      ansible.builtin.service:
+        name: nginx.service
+        state: started 
+
+    - name: Create directories for ssl certificates
+      file: 
+        path: /etc/ssl/certs/custom
+        owner: root
+        group: root
+        state: directory
+        mode: '0600'
+
+    - name: Create directories for conf.d
+      file: 
+        path: /etc/nginx/conf.d/
+        owner: root
+        group: root
+        state: directory
+        mode: '0600'
+
+    - name: Create directories for sites-available
+      file: 
+        path: /etc/nginx/sites-available
+        owner: root
+        group: root
+        state: directory
+        mode: '0600'
+
+    - name: Create directories for sites-enabled
+      file: 
+        path: /etc/nginx/sites-enabled
+        owner: root
+        group: root
+        state: directory
+        mode: '0600'
+
+    - name: NGINX CONFIG - LOG FORMAT
+      copy:
+        src: ../nginx/config/logformat.tpl
+        dest: "{{ nginx_path }}/conf.d/logformat.conf"
+    
+    - name: NGINX - Setup Main Conf
+      template:
+        src="../nginx/config/nginx.conf.tpl"
+        dest="{{ nginx_path }}/nginx.conf"
+
+    - name: NGINX - Setup vHost
+      template:
+        src="../nginx/sites/app.conf.tpl"
+        dest="{{ nginx_sites }}/{{ site_name }}.conf"
+      notify: restart nginx
+
+    - name: NGINX - Defautlt vHost
+      template:
+        src="../nginx/sites/default.conf.tpl"
+        dest="/etc/nginx/sites-enabled/default.conf"
+      notify: restart nginx
+ 
+    - name: NGINX - Create symlink vHost
+      file:
+        src="{{ nginx_sites }}/{{ site_name }}.conf"
+        dest="/etc/nginx/sites-enabled/{{ site_name }}.conf"
+        state=link
+      notify: restart nginx
+
+    - name: nginx -t && nginx -s reload
+      shell: nginx -t && nginx -s reload
+      register: nginx_test_result
+
+    - debug:
+        var: nginx_test_result.stdout_lines
+
+  handlers:
+    - name: restart nginx
+      service:
+        name=nginx
+        state=restarted
