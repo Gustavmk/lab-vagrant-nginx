@@ -1,0 +1,15 @@
+defaults
+  mode http
+  timeout client 10s
+  timeout connect 5s
+  timeout server 10s 
+  timeout http-request 10s
+
+frontend myfrontend
+  bind 0.0.0.0:80
+  default_backend web
+  
+backend web
+    server web1 nginxhost_1:80
+    server web2 nginxhost_2:80
+    server web3 nginxhost_3:80
