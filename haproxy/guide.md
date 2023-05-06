@@ -18,7 +18,8 @@ docker run --rm --network=dev -p 8404:8404 -p 8080:80 -v /run/haproxy:/run/hapro
 
 
 # WEb
-docker run -d --rm --network=dev --name nginxhost_2 stenote/nginx-hostname
-docker run -d --rm --network=dev --name nginxhost_3 stenote/nginx-hostname
-docker run -d --rm --network=dev --name nginxhost_1 stenote/nginx-hostname
+docker rm -f nginxhost_1 ; docker run -d --rm --network=dev --name nginxhost_1 nginx-container
+docker rm -f nginxhost_2 ; docker run -d --rm --network=dev --name nginxhost_2 nginx-container
+docker rm -f nginxhost_3 ; docker run -d --rm --network=dev --name nginxhost_3 nginx-container
+
 ```
