@@ -1,25 +1,21 @@
 # configuração do HAPROXY
 
 ```bash
-wget -v "http://www.haproxy.org/download/2.7/src/haproxy-2.7.8.tar.gz"
-tar xvzf haproxy-2.7.8.tar.gz
-cd haproxy-2.7.8
-sudo apt-get install libz-dev libsystemd-dev build-essentials libpcre3 libpcre3-dev libssl-dev -y
-make TARGET=linux-glibc USE_PCRE=1 USE_OPENSSL=1 USE_ZLIB=1 USE_CRYPT_H=1 USE_LIBCRYPT=1 USE_SYSTEMD=1
-
-# Test HAPROXY config
-docker run -it --network=dev --rm -v ${PWD}/haproxy:/usr/local/etc/haproxy:ro --name haproxy-syntax-check haproxy:2.7.8 haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg
-
-
 
 docker network create -d bridge dev
+# WEB
+docker rm -f nginxhost_1 ; docker run --rm --network=dev --name nginxhost_1 nginx-container
+docker rm -f nginxhost_2 ; docker run --rm --network=dev --name nginxhost_2 nginx-container
+docker rm -f nginxhost_3 ; docker run --rm --network=dev --name nginxhost_3 nginx-container
 
-docker run --rm --network=dev -p 8404:8404 -p 8080:80 -v /run/haproxy:/run/haproxy:rw -v ${PWD}/haproxy:/usr/local/etc/haproxy:ro --name haproxy --sysctl net.ipv4.ip_unprivileged_port_start=0 haproxy:2.7.8
+# Test HAPROXY cofig
+docker run -it --network=dev --rm -v ${PWD}/haproxy:/usr/local/etc/haproxy:ro --name haproxy-syntax-check haproxy:2.7.8 haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg
 
+# PRE REQ
+mkdir -p /run/haproxy
+sudo chmod -R 777 in /run/haproxy
 
-# WEb
-docker rm -f nginxhost_1 ; docker run -d --rm --network=dev --name nginxhost_1 nginx-container
-docker rm -f nginxhost_2 ; docker run -d --rm --network=dev --name nginxhost_2 nginx-container
-docker rm -f nginxhost_3 ; docker run -d --rm --network=dev --name nginxhost_3 nginx-container
+# RUN HA PROXY
+docker run --rm --network=dev -p 8404:8404 -p 80:80 -p 443:443 -v /run/haproxy:/run/haproxy:rw -v ${PWD}/haproxy:/usr/local/etc/haproxy:ro --name haproxy --sysctl net.ipv4.ip_unprivileged_port_start=0 haproxy:2.7.8
 
 ```
